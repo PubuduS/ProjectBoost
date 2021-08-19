@@ -19,15 +19,6 @@ jobs:
       - name: Checkout code 🤓
         uses: actions/checkout@v2
 
-      # Build the HTML documentation
-      - name: Doxygen Action 🥰
-        id: doxygen
-        uses: mattnotmitt/doxygen-action@v1
-        with:
-          doxyfile-path: ./Doxyfile
-          working-directory: .
-          enable-latex: false
-
       - name: Create LFS file list 🥴
         run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
 
@@ -62,17 +53,6 @@ jobs:
         with:
           name: Test results (${{ matrix.testMode }}) 🙄
           path: ${{ steps.testRunner.outputs.artifactsPath }}
-          
-      # Deploy the HTML documentation to GitHub Pages
-      - name: GH Pages Deployment
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./Docs/html/
-          enable_jekyll: false
-          allow_empty_commit: false
-          force_orphan: true
-          publish_branch: gh-pages
 
   buildWindows:
     needs: testRunner
@@ -115,3 +95,29 @@ jobs:
         with:
           name: build-StandaloneWindows64 🤠
           path: build/StandaloneWindows64
+
+  deployPages:
+    needs: buildWindows
+    name: Deploy to Github Pages 🚀
+    runs-on: ubuntu-latest
+    steps:
+
+      # Build the HTML documentation
+      - name: Doxygen Action 🥰
+        id: doxygen
+        uses: mattnotmitt/doxygen-action@v1
+        with:
+          doxyfile-path: ./Doxyfile
+          working-directory: .
+          enable-latex: false
+
+      # Deploy the HTML documentation to GitHub Pages
+      - name: GH Pages Deployment 😄
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./Docs/html/
+          enable_jekyll: false
+          allow_empty_commit: false
+          force_orphan: true
+          publish_branch: gh-pages
