@@ -106,7 +106,9 @@ jobs:
           path: build/StandaloneWindows64
 
   deployPages:
-       # Deploy the HTML documentation to GitHub Pages
+    name: Deploy to Github Pages 🚀
+    runs-on: ubuntu-latest
+    steps:       
       - name: GH Pages Deployment
         uses: peaceiris/actions-gh-pages@v3
         with:
