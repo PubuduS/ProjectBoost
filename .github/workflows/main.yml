@@ -6,13 +6,6 @@ env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
 
 jobs:
-  checkLicense:
-    name: Check for Unity license 🧐
-    runs-on: ubuntu-latest
-    steps:
-      - name: Fail - No license 😰
-      if: ${{ !startsWith(env.UNITY_LICENSE, '<') }}
-      run: exit 1
   testRunner:
     name: Test in ${{ matrix.testMode }} ✨
     runs-on: ubuntu-latest
