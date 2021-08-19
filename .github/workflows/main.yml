@@ -67,10 +67,13 @@ jobs:
         id: doxygen
         uses: mattnotmitt/doxygen-action@v1
         with:
-          working-directory: .
           doxyfile-path: ./Doxyfile
+          working-directory: .
           enable-latex: false
-          echo ${{ steps.doxygen.working-directory}}
+          script: |
+            echo  '$(System.DefaultWorkingDirectory)'
+            dir
+            dir subfoldernam
 
       # Deploy the HTML documentation to GitHub Pages
       - name: GH Pages Deployment 😄
