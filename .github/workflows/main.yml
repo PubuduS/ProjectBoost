@@ -62,6 +62,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      - name: Checkout code 🤓
+        uses: actions/checkout@v2
+
       # Build the HTML documentation
       - name: Doxygen Action 🥰
         id: doxygen
@@ -70,10 +73,6 @@ jobs:
           doxyfile-path: ./Doxyfile
           working-directory: .
           enable-latex: false
-          script: |
-            echo  '$(System.DefaultWorkingDirectory)'
-            dir
-            dir subfoldernam
 
       # Deploy the HTML documentation to GitHub Pages
       - name: GH Pages Deployment 😄
