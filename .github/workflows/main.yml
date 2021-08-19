@@ -70,7 +70,7 @@ jobs:
           working-directory: .
           doxyfile-path: ./Doxyfile
           enable-latex: false
-          command: echo ${{ steps.doxygen.directory}}
+          echo ${{ steps.doxygen.working-directory}}
 
       # Deploy the HTML documentation to GitHub Pages
       - name: GH Pages Deployment 😄
