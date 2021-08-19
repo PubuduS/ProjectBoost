@@ -6,6 +6,13 @@ env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
 
 jobs:
+  checkLicense:
+    name: Check for Unity license 🧐
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail - No license 😰
+      if: ${{ !startsWith(env.UNITY_LICENSE, '<') }}
+      run: exit 1
   testRunner:
     name: Test in ${{ matrix.testMode }} ✨
     runs-on: ubuntu-latest
@@ -16,25 +23,34 @@ jobs:
           - EditMode
           - PlayMode
     steps:
-      - name: Checkout code
+      - name: Checkout code 🤓
         uses: actions/checkout@v2
 
-      - name: Create LFS file list
+      # Build the HTML documentation
+      - name: Doxygen Action 🥰
+        id: doxygen
+        uses: mattnotmitt/doxygen-action@v1
+        with:
+          doxyfile-path: ./Doxyfile
+          working-directory: .
+          enable-latex: false
+
+      - name: Create LFS file list 🥴
         run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
 
-      - name: Restore LFS cache
+      - name: Restore LFS cache 😄
         uses: actions/cache@v2
         id: lfs-cache
         with:
           path: .git/lfs
           key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}
 
-      - name: Git LFS Pull
+      - name: Git LFS Pull 🙃
         run: |
           git lfs pull
           git add .
           git reset --hard
-      - name: Restore Library cache
+      - name: Restore Library cache 😇
         uses: actions/cache@v2
         with:
           path: Library
@@ -51,50 +67,8 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: Test results (${{ matrix.testMode }})
+          name: Test results (${{ matrix.testMode }}) 🙄
           path: ${{ steps.testRunner.outputs.artifactsPath }}
-
-  buildWebGL:
-    needs: testRunner
-    name: Build for WebGL 🖥️
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Create LFS file list
-        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
-
-      - name: Restore LFS cache
-        uses: actions/cache@v2
-        id: lfs-cache
-        with:
-          path: .git/lfs
-          key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}
-
-      - name: Git LFS Pull
-        run: |
-          git lfs pull
-          git add .
-          git reset --hard
-      - name: Restore Library cache
-        uses: actions/cache@v2
-        with:
-          path: Library
-          key: Library-build-WebGL
-          restore-keys: |
-            Library-build-
-            Library-
-      - uses: game-ci/unity-builder@v2
-        with:
-          targetPlatform: WebGL
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: build-WebGL
-          path: build/WebGL
 
   buildWindows:
     needs: testRunner
@@ -103,25 +77,25 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - name: Checkout code
+      - name: Checkout code 🤓
         uses: actions/checkout@v2
 
-      - name: Create LFS file list
+      - name: Create LFS file list 🥴
         run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
 
-      - name: Restore LFS cache
+      - name: Restore LFS cache 😄
         uses: actions/cache@v2
         id: lfs-cache
         with:
           path: .git/lfs
           key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}
 
-      - name: Git LFS Pull
+      - name: Git LFS Pull 🙃
         run: |
           git lfs pull
           git add .
           git reset --hard
-      - name: Restore Library cache
+      - name: Restore Library cache 😇
         uses: actions/cache@v2
         with:
           path: Library
@@ -135,67 +109,17 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: build-StandaloneWindows64
+          name: build-StandaloneWindows64 🤠
           path: build/StandaloneWindows64
 
-  buildAndroid:
-    needs: testRunner
-    name: Build for Android 📱
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Create LFS file list
-        run: git lfs ls-files -l | cut -d' ' -f1 | sort > .lfs-assets-id
-
-      - name: Restore LFS cache
-        uses: actions/cache@v2
-        id: lfs-cache
-        with:
-          path: .git/lfs
-          key: ${{ runner.os }}-lfs-${{ hashFiles('.lfs-assets-id') }}
-
-      - name: Git LFS Pull
-        run: |
-          git lfs pull
-          git add .
-          git reset --hard
-      - name: Restore Library cache
-        uses: actions/cache@v2
-        with:
-          path: Library
-          key: Library-build-Android
-          restore-keys: |
-            Library-build-
-            Library-
-      - uses: game-ci/unity-builder@v2
-        with:
-          targetPlatform: Android
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: build-Android
-          path: build/Android
-
-
   deployPages:
-    needs: buildWebGL
-    name: Deploy to Github Pages 🚀
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - uses: actions/download-artifact@v2
+       # Deploy the HTML documentation to GitHub Pages
+      - name: GH Pages Deployment
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          name: build-WebGL
-          path: build
-
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@4.1.4
-        with:
-          branch: gh-pages
-          folder: build/WebGL
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./Docs/html/
+          enable_jekyll: false
+          allow_empty_commit: false
+          force_orphan: true
+          publish_branch: gh-pages
