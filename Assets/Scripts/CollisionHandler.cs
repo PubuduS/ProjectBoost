@@ -3,25 +3,33 @@ using UnityEngine.SceneManagement;
 
 public class CollisionHandler : MonoBehaviour
 {
-
+    //! Before a level changed, there is a small delay.
     [SerializeField]
     private float levelLoadDelay = 2.0f;
 
+    //! Holds the audio clip with the crash sound.
     [SerializeField]
-    AudioClip crashSound = null;
+    private AudioClip crashSound = null;
 
+    //! Holds the audio clip with the success sound.
     [SerializeField]
-    AudioClip successSound = null;
+    private AudioClip successSound = null;
 
+    //! Holds the particles displayed in a successfull landing.
     [SerializeField]
-    ParticleSystem successParticles = null;
+    private ParticleSystem successParticles = null;
 
+    //! Holds the particles displayed in a unsuccessfull landing.
     [SerializeField]
-    ParticleSystem crashParticles = null;
+    private ParticleSystem crashParticles = null;
 
+    //! Used to chanage the audio sources in situations like landing and crashing.
     private AudioSource myAudioSource = null;
 
+    //! Disable initiating multiple sequences. Otherwise player will hear same sound again and again.
     private bool isTransitioning = false;
+
+    //! This is just for debugging process. We can disable the collusions.
     private bool collisionDisabled = false;
 
     private void Start()
@@ -34,6 +42,8 @@ public class CollisionHandler : MonoBehaviour
         RespondToDebugKeys();
     }
 
+    //! Whenever a collusion happened this function will get called.
+    //! This function will trigger the success and crash sequences.
     private void OnCollisionEnter( Collision other )
     {
 
@@ -44,21 +54,23 @@ public class CollisionHandler : MonoBehaviour
 
         switch( other.gameObject.tag )
         {
-            case "Friendly":
-                Debug.Log("Bumped into a launch pad");
+            case "Friendly":                
                 break;
             
             case "Finish":
                 StartSucessSequence();
                 break;
 
-            default:
-                // Invoke add a delay to the method.
+            default:                
                 StartCrashSequence();
                 break;
         }
     }
 
+    //! This is just a function for debugging purposes.
+    //! Remove before build.
+    //! This allows user to load levels without completing the level
+    //! and disable collusions.
     private void RespondToDebugKeys()
     {
         if ( Input.GetKey( KeyCode.L ) )
@@ -71,6 +83,12 @@ public class CollisionHandler : MonoBehaviour
             collisionDisabled = !collisionDisabled; 
         }
     }
+
+    //! Start the sucess sequence.
+    //! Play sound clip and triggeres the particles.
+    //! Also, disabled the movement script.
+    //! So, player won't be able to control the rocket.
+    //! after a small delay, it will then load the next level.
     private void StartSucessSequence()
     {
         isTransitioning = true;
@@ -78,9 +96,15 @@ public class CollisionHandler : MonoBehaviour
         myAudioSource.PlayOneShot( successSound );
         successParticles.Play();
         GetComponent<Movement>().enabled = false;
+        // Invoke add a delay to the method.
         Invoke( "LoadNextLevel", levelLoadDelay );
     }
 
+    //! Start the crash sequence.
+    //! Play sound clip and triggeres the particles.
+    //! Also, disabled the movement script.
+    //! So, player won't be able to control the rocket.
+    //! after a small delay, it will then load the next level.
     private void StartCrashSequence()
     {        
         // todo add particle effect upon crash.
@@ -92,6 +116,7 @@ public class CollisionHandler : MonoBehaviour
         Invoke( "ReloadLevel", levelLoadDelay );
     }
 
+    //! Load the next level.
     private void LoadNextLevel()
     {
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
@@ -104,6 +129,7 @@ public class CollisionHandler : MonoBehaviour
         SceneManager.LoadScene( nextSceneIndex );
     }
 
+    //! Reload the level if player crashed the ship.
     private void ReloadLevel()
     {
         int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
